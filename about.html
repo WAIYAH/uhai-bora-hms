@@ -16,11 +16,19 @@
         <a class="brand" href="index.html" aria-label="Uhai Bora home"><img class="brand-logo" src="assets/brand/uhai-bora.svg" alt="Uhai Bora"></a>
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
         <nav class="site-nav" id="site-nav" aria-label="Main navigation">
-            <a href="services.html">Find care</a>
-            <a href="how-it-works.html">How it works</a>
+            <a href="index.html">Home</a>
+            <a href="services.html">Services</a>
             <a href="about.html" aria-current="page">About</a>
-            <a class="nav-login" href="login.php">Log in</a>
-            <a class="button button-small" href="signup.php">Create account <span aria-hidden="true">↗</span></a>
+            <a href="contact.html">Contact</a>
+            <a class="button button-small nav-book" href="signup.php">Book Now <span aria-hidden="true">↗</span></a>
+            <div class="account-menu">
+                <button class="account-toggle" type="button" aria-expanded="false" aria-controls="account-options" aria-label="Account">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></svg>
+                    <span>Account</span>
+                    <svg class="account-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"></path></svg>
+                </button>
+                <div class="account-dropdown" id="account-options" hidden><a href="signup.php">Register</a><a href="login.php">Login</a></div>
+            </div>
         </nav>
     </header>
     <main>
@@ -63,7 +71,7 @@
                     <a href="https://x.com/" data-share="x" target="_blank" rel="noopener noreferrer" aria-label="Share on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 3H22l-6.8 7.8L23.2 21h-6.3L12 14.7 6.5 21H3.3l7.3-8.4L2.8 3h6.5l4.5 5.9zm-1.1 16h1.7L8.3 4.9H6.5z"/></svg></a>
                 </div></div>
             </div>
-            <nav class="footer-nav" aria-label="Explore Uhai Bora"><h2 class="footer-column-title">EXPLORE</h2><a href="index.html">Home</a><a href="services.html">Find care</a><a href="how-it-works.html">How it works</a><a href="about.html">About</a></nav>
+            <nav class="footer-nav" aria-label="Explore Uhai Bora"><h2 class="footer-column-title">EXPLORE</h2><a href="index.html">Home</a><a href="services.html">Services</a><a href="about.html">About</a><a href="contact.html">Contact</a><a href="how-it-works.html">How it works</a></nav>
             <nav class="footer-nav" aria-label="Your account"><h2 class="footer-column-title">YOUR ACCOUNT</h2><a href="login.php">Log in</a><a href="signup.php">Create an account</a></nav>
             <nav class="footer-nav" aria-label="Legal and policies"><h2 class="footer-column-title">LEGAL &amp; POLICIES</h2><a href="privacy.html">Privacy policy</a><a href="terms.html">Terms of use</a><a href="cookies.html">Cookie notice</a><a href="accessibility.html">Accessibility</a></nav>
         </div>

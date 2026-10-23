@@ -52,10 +52,10 @@ html {
 .site-nav {
     display: flex;
     align-items: center;
-    gap: 34px;
+    gap: clamp(14px, 1.65vw, 25px);
 }
 
-.site-nav a,
+.site-nav > a:not(.button),
 .text-link {
     color: var(--ink);
     font-size: 13px;
@@ -64,13 +64,94 @@ html {
     transition: color .2s ease;
 }
 
-.site-nav a:hover,
+.site-nav > a:not(.button):hover,
 .text-link:hover {
     color: #438b60;
 }
 
-.site-nav .nav-login {
-    margin-left: 20px;
+.site-nav .button-small {
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.account-menu {
+    position: relative;
+}
+
+.account-toggle {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 3px;
+    border: 0;
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 550;
+}
+
+.account-toggle > svg:first-child {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+.account-toggle .account-chevron {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+    transition: transform .18s ease;
+}
+
+.account-toggle[aria-expanded="true"] .account-chevron {
+    transform: rotate(180deg);
+}
+
+.account-toggle:hover,
+.account-toggle:focus-visible {
+    color: #438b60;
+}
+
+.account-dropdown {
+    position: absolute;
+    top: calc(100% + 9px);
+    right: 0;
+    z-index: 10;
+    display: grid;
+    width: 172px;
+    padding: 7px;
+    border: 1px solid #e1e8df;
+    background: #fff;
+    box-shadow: 0 16px 36px rgba(24, 52, 47, .14);
+}
+
+.account-dropdown[hidden] {
+    display: none;
+}
+
+.account-dropdown a {
+    padding: 11px 12px;
+    color: var(--ink);
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.account-dropdown a:hover,
+.account-dropdown a:focus-visible {
+    color: var(--green);
+    background: #f0f5ed;
 }
 
 .button {
@@ -985,16 +1066,40 @@ html {
         flex-direction: column;
     }
 
-    .site-nav a {
+    .site-nav > a {
         padding: 13px;
-    }
-
-    .site-nav .nav-login {
-        margin: 0;
     }
 
     .site-nav .button-small {
         margin: 5px 0 0;
+        padding: 0 17px;
+    }
+
+    .account-menu {
+        width: 100%;
+    }
+
+    .account-toggle {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 10px 13px;
+    }
+
+    .account-toggle .account-chevron {
+        margin-left: auto;
+    }
+
+    .account-dropdown {
+        position: static;
+        width: 100%;
+        padding: 0 0 5px 35px;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .account-dropdown a {
+        padding: 11px 13px;
     }
 
     .hero {

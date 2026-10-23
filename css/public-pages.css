@@ -356,9 +356,189 @@
     color: #514621;
 }
 
+.contact-hero {
+    display: grid;
+    width: min(1240px, calc(100% - 64px));
+    min-height: 470px;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 7%;
+    margin: 0 auto;
+    padding: 32px 0 72px;
+}
+
+.contact-hero-copy {
+    padding-left: 7.5%;
+}
+
+.contact-hero-copy h1 {
+    margin: 0;
+    font-size: clamp(52px, 6vw, 76px);
+    font-weight: 500;
+    letter-spacing: -4.8px;
+    line-height: .99;
+}
+
+.contact-hero-copy h1 em {
+    color: #59836f;
+    font-family: Georgia, serif;
+    font-weight: 400;
+}
+
+.contact-hero-copy > p:not(.eyebrow) {
+    max-width: 420px;
+    margin: 22px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.85;
+}
+
+.contact-hero-image {
+    position: relative;
+    min-height: 350px;
+    overflow: hidden;
+    background: #dfe9dc;
+}
+
+.contact-hero-image img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.contact-hero-image::after {
+    position: absolute;
+    inset: 55% 0 0;
+    background: linear-gradient(transparent, rgba(18, 45, 36, .28));
+    content: "";
+    pointer-events: none;
+}
+
+.contact-hero-image .photo-credit {
+    position: absolute;
+    right: 14px;
+    bottom: 12px;
+    z-index: 1;
+    color: #fff;
+    font-size: 9px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, .55);
+}
+
+.contact-options {
+    display: grid;
+    width: min(1050px, calc(100% - 64px));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0 auto 28px;
+}
+
+.contact-option {
+    min-height: 315px;
+    padding: 30px;
+    border: 1px solid #e1e8df;
+    background: rgba(255, 255, 255, .65);
+}
+
+.contact-option-highlight {
+    background: #eaf1e6;
+}
+
+.contact-option-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    color: var(--green);
+    background: #eaf1e6;
+}
+
+.contact-option-highlight .contact-option-icon {
+    background: rgba(255, 255, 255, .7);
+}
+
+.contact-option-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+.contact-option .eyebrow {
+    margin-bottom: 8px;
+    font-size: 9px;
+}
+
+.contact-option h2 {
+    margin: 0 0 11px;
+    font-size: 23px;
+    font-weight: 550;
+    letter-spacing: -.8px;
+}
+
+.contact-option > p:not(.eyebrow) {
+    max-width: 440px;
+    margin: 0 0 20px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.contact-option .text-link {
+    font-size: 12px;
+}
+
+.contact-option .contact-provider-note {
+    margin-top: 15px;
+    color: #526c5c;
+    font-weight: 550;
+}
+
+.contact-safety-note {
+    display: flex;
+    width: min(1050px, calc(100% - 64px));
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 auto 90px;
+    padding: 19px 22px;
+    border: 1px solid #eadfc5;
+    background: #faf6eb;
+}
+
+.contact-safety-note > span {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    place-items: center;
+    border: 1px solid #c4a764;
+    border-radius: 50%;
+    color: #765e27;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.contact-safety-note p {
+    margin: 0;
+    color: #665b40;
+    font-size: 12px;
+    line-height: 1.75;
+}
+
+.contact-safety-note strong {
+    color: #514621;
+}
+
 @media (max-width: 1000px) {
     .public-hero,
-    .public-hero-about {
+    .public-hero-about,
+    .contact-hero {
         min-height: 480px;
         gap: 4%;
     }
@@ -375,7 +555,8 @@
 @media (max-width: 760px) {
     .public-hero,
     .public-hero-about,
-    .public-hero-process {
+    .public-hero-process,
+    .contact-hero {
         width: min(100% - 36px, 560px);
         grid-template-columns: 1fr;
         gap: 28px;
@@ -383,12 +564,14 @@
     }
 
     .public-hero-copy,
-    .public-hero-process .public-hero-copy {
+    .public-hero-process .public-hero-copy,
+    .contact-hero-copy {
         padding: 0;
     }
 
     .public-hero-copy h1,
-    .public-hero-process .public-hero-copy h1 {
+    .public-hero-process .public-hero-copy h1,
+    .contact-hero-copy h1 {
         font-size: clamp(49px, 12vw, 66px);
         letter-spacing: -3.7px;
     }
@@ -399,17 +582,37 @@
         min-height: 300px;
     }
 
+    .contact-hero-image {
+        min-height: 285px;
+    }
+
     .public-section,
     .public-about-band,
     .public-values,
     .public-steps,
     .public-safety-note,
+    .contact-options,
+    .contact-safety-note,
     .public-callout {
         width: min(100% - 36px, 560px);
     }
 
     .public-section {
         margin-bottom: 60px;
+    }
+
+    .contact-options {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-option {
+        min-height: 280px;
+        padding: 24px;
+    }
+
+    .contact-safety-note {
+        margin-bottom: 60px;
+        padding: 16px;
     }
 
     .public-values,

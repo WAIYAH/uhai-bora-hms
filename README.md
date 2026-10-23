@@ -50,7 +50,7 @@ The homepage highlights appointment booking, directory specialties, a three-step
 
 ## Public pages
 
-The public site includes the homepage, [Find care](./services.html), [About Uhai Bora](./about.html), and [How it works](./how-it-works.html), with consistent navigation to login, registration, and the project-level policy pages. Account creation uses `signup.php` and `create-account.php`; newly registered patient passwords are stored with PHP's password hashing API.
+The public site includes the homepage, [Services](./services.html), [About Uhai Bora](./about.html), [Contact](./contact.html), and [How it works](./how-it-works.html). Its shared navigation links to these public pages, highlights Book Now, and provides Register and Login from an accessible Account menu. The Contact page does not invent clinic contact details; the operator should publish verified contact channels before production. Account creation uses `signup.php` and `create-account.php`; newly registered patient passwords are stored with PHP's password hashing API.
 
 ## Policies
 

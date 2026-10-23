@@ -1,5 +1,41 @@
 const menuButton = document.querySelector(".menu-toggle");
 const siteNavigation = document.querySelector("#site-nav");
+const accountToggle = document.querySelector(".account-toggle");
+const accountDropdown = document.querySelector(".account-dropdown");
+
+if (accountToggle && accountDropdown) {
+    const closeAccountMenu = (restoreFocus = false) => {
+        accountToggle.setAttribute("aria-expanded", "false");
+        accountDropdown.hidden = true;
+        if (restoreFocus) {
+            accountToggle.focus();
+        }
+    };
+
+    accountToggle.addEventListener("click", () => {
+        const isExpanded = accountToggle.getAttribute("aria-expanded") === "true";
+        accountToggle.setAttribute("aria-expanded", String(!isExpanded));
+        accountDropdown.hidden = isExpanded;
+    });
+
+    accountDropdown.addEventListener("click", (event) => {
+        if (event.target instanceof Element && event.target.closest("a")) {
+            closeAccountMenu();
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        if (event.target instanceof Node && !event.target.parentElement?.closest(".account-menu")) {
+            closeAccountMenu();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && accountToggle.getAttribute("aria-expanded") === "true") {
+            closeAccountMenu(true);
+        }
+    });
+}
 
 if (menuButton && siteNavigation) {
     menuButton.addEventListener("click", () => {
