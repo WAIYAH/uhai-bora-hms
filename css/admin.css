@@ -1,0 +1,245 @@
+.container{
+    display: flex;
+    flex-wrap: wrap;
+    height: 100vh;
+
+
+}
+.menu{
+    border-right: 1.5px solid rgb(235, 235, 235);
+    width: 21%;
+    height: 100vh;
+    box-shadow: 0 0px 0px 2px rgba(240, 240, 240, 0.3);
+}
+.menu::before{
+    content: "UHAI BORA";
+    display: block;
+    padding: 22px 20px 0;
+    color: #1d5949;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+.dash-body{
+    width: 79%;
+    height: 100vh;
+}
+
+.menu-container{
+    width: 100%;
+    border-spacing: 0;
+    
+}
+
+.profile-title{
+    font-weight: 500;
+    color: #161c2d;
+    font-size: 22px;
+    margin: 0;
+    text-align: left;
+    padding-left: 8%;
+}
+
+.profile-subtitle{
+    font-weight: 300;
+    color: #8492a6;
+    font-size: 15px;
+    margin: 0;
+    text-align: left;
+    padding-left: 8%;
+}
+
+.logout-btn{
+    margin-top: 30px;
+    width: 85%;
+}
+
+.profile-container{
+    border-bottom: 1.5px solid rgb(235, 235, 235);
+    /*border-radius: 6px;*/
+    padding-top: 18%;
+    padding-bottom: 12%;
+    /*box-shadow: 0 0 3px rgba(52,58,64,0.08);*/
+    text-align: center;
+    
+}
+
+
+/*.menu-items1{
+    font-weight: 500;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+    color: #161c2def;
+    
+}
+
+.menu-td1{
+    padding-right: 10px;
+}
+
+
+.menu-button:hover{
+    cursor: pointer;
+    background-color:var(--btnice);
+}
+
+.menu-active{
+    color:var(--btnnicetext);
+    
+}
+
+.menu-items1-active{
+    color:var(--btnnicetext);
+    background-image: url('../img/search.svg');
+    background-position: 10px 50%;
+    background-repeat: no-repeat;
+}
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+.heading-main12{
+    font-weight: 500;
+    font-size: 25px;
+}
+
+.heading-sub12{
+    font-weight: 500;
+    font-size: 20px;
+    text-align: right;
+}
+
+
+.header-search{
+    display: flex;
+    justify-content: center;
+
+    
+}
+.header-searchbar{
+    width: 75%;
+    background-color: rgba(255, 255, 255, 0.705);
+    border: 0.5px solid rgba(190, 190, 190, 0.884);
+    
+    
+}
+
+.add-doc-form-container{
+    padding: 25px;
+    margin-top: 30px;
+    
+}
+
+.session-editor{
+    max-width: 1100px;
+    margin: 20px auto 30px;
+    padding: 22px 25px;
+    border: 1px solid #e6ece8;
+    border-radius: 10px;
+    background: #f8fbf8;
+}
+
+.session-editor h2{
+    margin: 0 0 16px;
+    color: #18342f;
+    font-size: 18px;
+}
+
+.session-editor h1{
+    margin: 22px 0;
+    color: #18342f;
+    font-size: 25px;
+}
+
+.session-editor-form{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+    align-items: end;
+    gap: 12px;
+}
+
+.session-editor-form label,
+.session-edit label{
+    display: grid;
+    gap: 6px;
+    color: #63736b;
+    font-size: 12px;
+}
+
+.session-edit{
+    position: relative;
+    margin-top: 8px;
+    text-align: left;
+}
+
+.session-edit summary{
+    padding: 10px;
+    border: 1px solid #dbe5df;
+    border-radius: 4px;
+    color: #1d5949;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.session-edit form{
+    position: absolute;
+    right: 0;
+    z-index: 2;
+    display: grid;
+    width: 240px;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #dbe5df;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(24, 52, 47, .12);
+}
+
+.session-editor .care-link{
+    display: inline-block;
+    margin: 0 0 20px;
+    color: #1d5949;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.reschedule-form{
+    display: grid;
+    gap: 14px;
+}
+
+.reschedule-form label{
+    color: #63736b;
+    font-size: 13px;
+}
+
+.appointment-status-form{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.appointment-status-form select{
+    max-width: 125px;
+    padding: 8px;
+    border: 1px solid #dbe5df;
+    border-radius: 4px;
+    background: #fff;
+    color: #18342f;
+}
+
+@media (max-width: 800px){
+    .session-editor-form{
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+}
