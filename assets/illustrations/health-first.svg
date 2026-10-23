@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title">
+  <title id="title">Your health comes first</title>
+  <rect width="480" height="320" rx="26" fill="#eaf0e7"/>
+  <circle cx="240" cy="157" r="105" fill="#d5e4d0"/>
+  <path d="M240 248S137 185 137 115a57 57 0 0 1 103-34 57 57 0 0 1 103 34c0 70-103 133-103 133" fill="#fff"/>
+  <path d="M240 219s-75-47-75-98a41 41 0 0 1 75-24 41 41 0 0 1 75 24c0 51-75 98-75 98" fill="#c7ec83"/>
+  <path d="M240 119v56m-28-28h56" stroke="#1d5949" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="102" cy="115" r="20" fill="#fff"/><path d="M102 105v20m-10-10h20" stroke="#86a77d" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="377" cy="197" r="24" fill="#fff"/><path d="M377 185v24m-12-12h24" stroke="#86a77d" stroke-width="4" stroke-linecap="round"/>
+  <path d="M87 203h22m-11-11v22M365 77h20m-10-10v20" stroke="#9db48f" stroke-width="3" stroke-linecap="round"/>
+</svg>

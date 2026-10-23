@@ -1,45 +1,83 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Colombo');
 
-if (empty($_SESSION['personal']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: signup.php');
     exit;
 }
 
-require_once 'connection.php';
+$submittedToken = $_POST['csrf_token'] ?? '';
+$sessionToken = $_SESSION['signup_csrf'] ?? '';
+if (!is_string($submittedToken) || !is_string($sessionToken) || $sessionToken === '' || !hash_equals($sessionToken, $submittedToken)) {
+    $_SESSION['signup_error'] = 'Your registration session expired. Please review your details and try again.';
+    header('Location: signup.php');
+    exit;
+}
 
-$personal = $_SESSION['personal'];
-$name = trim(($personal['fname'] ?? '') . ' ' . ($personal['lname'] ?? ''));
-$address = trim($personal['address'] ?? '');
-$nic = trim($personal['nic'] ?? '');
-$dob = $personal['dob'] ?? '';
-$email = trim($_POST['newemail'] ?? '');
-$telephone = trim($_POST['tele'] ?? '');
+$fields = ['fname', 'lname', 'address', 'nic', 'dob', 'newemail', 'tele'];
+$values = [];
+foreach ($fields as $field) {
+    $postedValue = $_POST[$field] ?? '';
+    $values[$field] = is_string($postedValue) ? trim($postedValue) : '';
+}
+
+$firstName = $values['fname'];
+$lastName = $values['lname'];
+$name = trim($firstName . ' ' . $lastName);
+$address = $values['address'];
+$nic = $values['nic'];
+$dob = $values['dob'];
+$email = $values['newemail'];
+$telephone = $values['tele'];
 $password = $_POST['newpassword'] ?? '';
 $confirmPassword = $_POST['cpassword'] ?? '';
+$acceptedTerms = ($_POST['accept_terms'] ?? '') === '1';
+$dateOfBirth = DateTime::createFromFormat('!Y-m-d', $dob);
+$validDate = $dateOfBirth instanceof DateTime
+    && $dateOfBirth->format('Y-m-d') === $dob
+    && $dob <= date('Y-m-d');
 
-if ($password !== $confirmPassword || $name === '' || $address === '' || $nic === '' || $dob === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $error = $password !== $confirmPassword ? 'Password confirmation does not match.' : 'Please check your details and try again.';
-} else {
+$error = '';
+if (
+    $firstName === '' || $lastName === '' || $address === '' || $nic === ''
+    || $telephone === '' || strlen($address) > 255 || strlen($nic) > 32
+    || strlen($telephone) > 32 || strlen($name) > 255
+    || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 255
+    || !$validDate
+) {
+    $error = 'Please check your details and enter valid information in every field.';
+} elseif (!is_string($password) || strlen($password) < 10) {
+    $error = 'Choose a password with at least 10 characters.';
+} elseif (!is_string($confirmPassword) || !hash_equals($password, $confirmPassword)) {
+    $error = 'Password confirmation does not match.';
+} elseif (!$acceptedTerms) {
+    $error = 'Please agree to the Terms of use to create your account.';
+}
+
+if ($error === '') {
+    require_once 'connection.php';
     $check = $database->prepare('SELECT 1 FROM webuser WHERE email = ?');
     $check->bind_param('s', $email);
     $check->execute();
 
     if ($check->get_result()->num_rows > 0) {
-        $error = 'An account already exists for this email address.';
+        $error = 'An account already exists for this email address. Try logging in instead.';
     } else {
         $database->begin_transaction();
         $user = $database->prepare("INSERT INTO webuser (email, usertype) VALUES (?, 'p')");
         $user->bind_param('s', $email);
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         $patient = $database->prepare('INSERT INTO patient (pemail, pname, ppassword, paddress, pnic, pdob, ptel) VALUES (?, ?, ?, ?, ?, ?, ?)');
-        $patient->bind_param('sssssss', $email, $name, $password, $address, $nic, $dob, $telephone);
+        $patient->bind_param('sssssss', $email, $name, $passwordHash, $address, $nic, $dob, $telephone);
 
         if ($user->execute() && $patient->execute()) {
             $database->commit();
+            session_regenerate_id(true);
             $_SESSION['user'] = $email;
             $_SESSION['usertype'] = 'p';
             $_SESSION['username'] = $name;
-            unset($_SESSION['personal']);
+            unset($_SESSION['signup_csrf'], $_SESSION['signup_error'], $_SESSION['signup_values']);
             header('Location: patient/index.php');
             exit;
         }
@@ -50,25 +88,8 @@ if ($password !== $confirmPassword || $name === '' || $address === '' || $nic ==
         exit('Unable to create your account. Please try again.');
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/signup.css">
-    <link rel="stylesheet" href="css/index.css">
-    <title>Uhai Bora | Create account</title>
-</head>
-<body>
-    <center>
-        <div class="container">
-            <a class="brand" href="index.html"><span class="brand-mark">u</span><span>uhai <strong>bora</strong></span></a>
-            <p class="header-text">Let's get started</p>
-            <p class="sub-text"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
-            <a class="hover-link1 non-style-link" href="signup.php">Back to sign up</a>
-        </div>
-    </center>
-</body>
-</html>
+
+$_SESSION['signup_error'] = $error;
+$_SESSION['signup_values'] = $values;
+header('Location: signup.php');
+exit;

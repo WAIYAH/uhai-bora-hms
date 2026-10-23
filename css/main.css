@@ -540,16 +540,19 @@ input[type=search]:focus {
 
 
 .doctor-header{
-  background-image: url(../img/b8.jpg);
+  background-image: linear-gradient(rgba(245, 248, 242, .38), rgba(245, 248, 242, .38)), url("../assets/illustrations/dashboard-care.svg");
   color: rgba(0, 0, 0, 0.87);
-  background-size: 100%;
+  background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
   padding: 20px;
   padding-left: 35px;
 }
 
 .patient-header{
-  background-image: url(../img/b3.jpg);
+  background-image: linear-gradient(rgba(245, 248, 242, .36), rgba(245, 248, 242, .36)), url("../assets/illustrations/dashboard-team.svg");
+  background-size: cover;
+  background-position: center;
 }
 
 .search-items{

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-labelledby="title">
+  <title id="title">Discover trusted care</title>
+  <rect width="360" height="240" rx="18" fill="#eaf1e6"/>
+  <circle cx="180" cy="119" r="78" fill="#d2e4cb"/>
+  <rect x="96" y="43" width="170" height="158" rx="17" fill="#fff"/>
+  <rect x="114" y="60" width="134" height="89" rx="11" fill="#dcebdc"/>
+  <circle cx="180" cy="91" r="22" fill="#bc8061"/>
+  <path d="M149 139c3-29 13-39 31-39s28 10 31 39" fill="#1d5949"/>
+  <circle cx="180" cy="91" r="24" fill="none" stroke="#eff5e8" stroke-width="3"/>
+  <path d="M139 167h84M139 181h56" stroke="#dae2d9" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="251" cy="150" r="29" fill="#c7ec83"/>
+  <path d="M269 170l19 20" stroke="#1d5949" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="251" cy="150" r="11" fill="none" stroke="#1d5949" stroke-width="5"/>
+  <path d="M47 69h24m-12-12v24M299 77h18m-9-9v18M69 178h16m-8-8v16" stroke="#82a776" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" role="img" aria-labelledby="title">
+  <title id="title">A connected, caring clinic</title>
+  <rect width="560" height="300" rx="24" fill="#eff1e7"/>
+  <circle cx="436" cy="112" r="77" fill="#d9e6d0"/>
+  <path d="M65 238h430v30H65z" fill="#c7d8bf"/>
+  <rect x="111" y="84" width="327" height="154" rx="12" fill="#fff"/>
+  <path d="M99 95l175-72 176 72" fill="#1d5949"/>
+  <path d="M131 99h286v139H131z" fill="#f7f7ef"/>
+  <rect x="157" y="129" width="56" height="109" rx="5" fill="#dce9dd"/>
+  <rect x="229" y="126" width="95" height="64" rx="6" fill="#d8e8db"/>
+  <path d="M276 126v64m-47-32h95" stroke="#fff" stroke-width="7"/>
+  <rect x="341" y="126" width="52" height="47" rx="5" fill="#c7ec83"/>
+  <path d="M367 137v25m-12-12h25" stroke="#1d5949" stroke-width="5" stroke-linecap="round"/>
+  <rect x="237" y="204" width="69" height="34" rx="4" fill="#a7c5ad"/>
+  <circle cx="167" cy="77" r="16" fill="#c7ec83"/>
+  <path d="M167 68v18m-9-9h18" stroke="#1d5949" stroke-width="4" stroke-linecap="round"/>
+  <path d="M75 69h20m-10-10v20M473 181h18m-9-9v18" stroke="#91a77f" stroke-width="3" stroke-linecap="round"/>
+</svg>

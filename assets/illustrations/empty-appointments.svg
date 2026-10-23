@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title">
+  <title id="title">Appointments, neatly organized</title>
+  <rect width="480" height="320" rx="26" fill="#f2f5ed"/>
+  <circle cx="238" cy="159" r="111" fill="#e0eadb"/>
+  <rect x="126" y="77" width="211" height="173" rx="18" fill="#fff"/>
+  <path d="M126 96a19 19 0 0 1 19-19h173a19 19 0 0 1 19 19v31H126z" fill="#1d5949"/>
+  <path d="M174 67v30m115-30v30" stroke="#c7ec83" stroke-width="9" stroke-linecap="round"/>
+  <g fill="#dfe8dc"><rect x="151" y="148" width="35" height="28" rx="7"/><rect x="200" y="148" width="35" height="28" rx="7"/><rect x="249" y="148" width="35" height="28" rx="7"/><rect x="151" y="190" width="35" height="28" rx="7"/><rect x="200" y="190" width="35" height="28" rx="7"/></g>
+  <rect x="249" y="190" width="35" height="28" rx="7" fill="#c7ec83"/>
+  <circle cx="318" cy="219" r="43" fill="#c7ec83"/>
+  <path d="M298 219l14 14 28-31" fill="none" stroke="#1d5949" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M68 107h22m-11-11v22M370 110h17m-8-8v17M94 234h18" stroke="#9db48f" stroke-width="3" stroke-linecap="round"/>
+</svg>

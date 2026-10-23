@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-labelledby="title">
+  <title id="title">Choose a convenient appointment</title>
+  <rect width="360" height="240" rx="18" fill="#f4efe1"/>
+  <rect x="87" y="42" width="187" height="159" rx="16" fill="#fff"/>
+  <path d="M87 77a16 16 0 0 1 16-16h155a16 16 0 0 1 16 16v16H87z" fill="#1d5949"/>
+  <path d="M125 51v19m111-19v19" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <g fill="#dce8d9">
+    <rect x="110" y="111" width="25" height="21" rx="5"/><rect x="148" y="111" width="25" height="21" rx="5"/><rect x="186" y="111" width="25" height="21" rx="5"/><rect x="224" y="111" width="25" height="21" rx="5"/>
+    <rect x="110" y="147" width="25" height="21" rx="5"/><rect x="148" y="147" width="25" height="21" rx="5"/>
+  </g>
+  <rect x="186" y="147" width="25" height="21" rx="5" fill="#c7ec83"/>
+  <rect x="224" y="147" width="25" height="21" rx="5" fill="#e8eee5"/>
+  <circle cx="236" cy="166" r="34" fill="#c7ec83"/>
+  <path d="M221 166l11 11 20-24" fill="none" stroke="#1d5949" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M65 98h24m-12-12v24M278 64h18m-9-9v18M57 173h18" stroke="#9bb38c" stroke-width="3" stroke-linecap="round"/>
+</svg>

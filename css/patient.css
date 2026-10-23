@@ -87,10 +87,10 @@ body{
 .header-container{
     margin-top: 25px;
     margin-bottom: 5%;
-    background-image: url(../img/bg01.jpg);
-    
+    background-image: linear-gradient(90deg, rgba(20, 52, 41, .57), rgba(20, 52, 41, .14)), url("../assets/illustrations/dashboard-clinic.svg");
     background-repeat: no-repeat;
-    background-size:cover;
+    background-position: center;
+    background-size: cover;
     height: 300px;
     text-align: center;
     border-radius: 10px;

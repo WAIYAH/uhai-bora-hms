@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 620" role="img" aria-labelledby="title">
+  <title id="title">A welcoming visit with a doctor</title>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#d7e7d1"/><stop offset="1" stop-color="#f1ead7"/></linearGradient>
+    <linearGradient id="coat" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e9f0e9"/></linearGradient>
+  </defs>
+  <circle cx="636" cy="110" r="76" fill="#f8edcf"/>
+  <path d="M0 490c155-92 284-35 406-48 142-16 253-83 354-30v208H0z" fill="#b9cfae"/>
+  <path d="M0 540c197-81 306 1 462-26 103-18 198-44 298-12v118H0z" fill="#88a98a"/>
+  <rect x="54" y="84" width="298" height="246" rx="7" fill="#f7f8ed"/>
+  <rect x="68" y="98" width="270" height="218" rx="3" fill="#d8e9d9"/>
+  <path d="M68 256h270v60H68z" fill="#c2ddce"/>
+  <path d="M196 98v218M68 205h270" stroke="#f9f8ef" stroke-width="9"/>
+  <path d="M84 329c-5-69 5-101 34-130 22 16 32 37 31 68-1 26-15 48-42 62" fill="#658f70"/>
+  <path d="M109 330c14-56 37-87 69-101" fill="none" stroke="#e6eed7" stroke-width="4"/>
+  <rect x="420" y="175" width="251" height="222" rx="17" fill="#1d5949"/>
+  <path d="M443 368c4-92 29-131 102-131s98 39 102 131" fill="#c7ec83"/>
+  <path d="M481 372c5-62 20-92 64-92s59 30 64 92" fill="url(#coat)"/>
+  <path d="M526 282l20 26 21-26" fill="#dbe7de"/>
+  <path d="M532 311h29l-5 62h-19z" fill="#b7d4c4"/>
+  <circle cx="544" cy="201" r="43" fill="#bc8061"/>
+  <path d="M501 198c0-43 25-66 56-59 29 6 42 29 33 61l-14-19-12-18-34 20-17 16z" fill="#283d35"/>
+  <path d="M497 333h-74a22 22 0 0 1-22-22v-2a22 22 0 0 1 22-22h61" fill="#f7f5eb"/>
+  <path d="M420 305h47" stroke="#c2c9bd" stroke-width="5" stroke-linecap="round"/>
+  <rect x="351" y="385" width="343" height="38" rx="19" fill="#f8f5e9"/>
+  <rect x="382" y="423" width="16" height="63" rx="8" fill="#755f4a"/>
+  <rect x="647" y="423" width="16" height="63" rx="8" fill="#755f4a"/>
+  <rect x="73" y="392" width="174" height="15" rx="7" fill="#f5f4e9"/>
+  <path d="M104 407v59m115-59v59" stroke="#735f4b" stroke-width="11"/>
+  <circle cx="127" cy="453" r="5" fill="#f5f8f2"/><circle cx="152" cy="453" r="5" fill="#f5f8f2"/><circle cx="177" cy="453" r="5" fill="#f5f8f2"/>
+  <rect x="542" y="57" width="155" height="59" rx="29" fill="#fff" opacity=".9"/>
+  <circle cx="571" cy="86" r="13" fill="#c7ec83"/>
+  <path d="M564 86l5 5 10-12" fill="none" stroke="#1d5949" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="594" y="91" fill="#1d5949" font-family="Arial,sans-serif" font-size="13" font-weight="700">CARE THAT FITS</text>
+</svg>

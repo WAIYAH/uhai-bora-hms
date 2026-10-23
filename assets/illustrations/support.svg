@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-labelledby="title">
+  <title id="title">Feel supported every step of the way</title>
+  <rect width="360" height="240" rx="18" fill="#e8efec"/>
+  <circle cx="180" cy="119" r="81" fill="#d0e2d9"/>
+  <path d="M180 191s-78-47-78-99a43 43 0 0 1 78-25 43 43 0 0 1 78 25c0 52-78 99-78 99" fill="#fff"/>
+  <path d="M180 172s-58-35-58-74a31 31 0 0 1 58-17 31 31 0 0 1 58 17c0 39-58 74-58 74" fill="#c7ec83"/>
+  <path d="M180 104v43m-21-21h42" stroke="#1d5949" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="86" cy="86" r="18" fill="#fff"/>
+  <path d="M78 87h16m-8-8v16" stroke="#78a070" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="278" cy="161" r="21" fill="#fff"/>
+  <path d="M278 151v20m-10-10h20" stroke="#78a070" stroke-width="3" stroke-linecap="round"/>
+  <path d="M84 151c-8 6-12 14-12 24m204-123c8 4 13 10 16 19" fill="none" stroke="#9bb38c" stroke-width="3" stroke-linecap="round"/>
+</svg>

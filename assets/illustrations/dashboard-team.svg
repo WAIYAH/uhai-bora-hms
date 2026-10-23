@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" role="img" aria-labelledby="title">
+  <title id="title">Care is better together</title>
+  <rect width="560" height="300" rx="24" fill="#e9f0ec"/>
+  <circle cx="282" cy="149" r="112" fill="#d4e5db"/>
+  <path d="M91 253c3-61 26-92 70-92s67 31 70 92" fill="#1d5949"/>
+  <path d="M230 253c3-75 23-111 68-111s65 36 68 111" fill="#c7ec83"/>
+  <path d="M370 253c3-61 26-92 70-92s67 31 70 92" fill="#7da187"/>
+  <circle cx="161" cy="121" r="37" fill="#bc8061"/>
+  <path d="M124 119c0-38 19-56 44-56 27 0 39 19 32 55l-17-14-14-17-31 24z" fill="#2c4036"/>
+  <circle cx="298" cy="102" r="40" fill="#d59b73"/>
+  <path d="M258 105c-1-40 20-63 46-63 31 0 43 25 32 62l-13-17-17-17-31 20z" fill="#35453e"/>
+  <path d="M283 145l15 20 16-20" fill="#fff"/>
+  <circle cx="439" cy="121" r="37" fill="#805945"/>
+  <path d="M402 121c0-38 18-56 43-56 27 0 40 20 34 57l-18-15-15-18-30 25z" fill="#283a33"/>
+  <path d="M268 175h60" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M73 84h21m-10-10v20M472 65h20m-10-10v20" stroke="#91a77f" stroke-width="3" stroke-linecap="round"/>
+</svg>

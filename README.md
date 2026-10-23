@@ -39,3 +39,19 @@ The SQL file recreates the application tables and demo records. Back up any exis
 ## Stack
 
 PHP, MySQL/MariaDB, HTML, CSS, and JavaScript.
+
+## Brand and media
+
+The Uhai Bora logo variants and original SVG illustrations live in `assets/brand/` and `assets/illustrations/`. Two short, silent MP4 loops in `assets/video/` add subtle motion to the landing page; they pause when off-screen and are disabled when reduced motion is enabled. Healthcare photographs are stored locally in `assets/photos/`: `doctor-consultation.jpg` is sourced from [Unsplash](https://images.unsplash.com/photo-1584515933487-779824d29309), and `care-team.jpg`, `patient-care.jpg`, and `clinic-care.jpg` are sourced from Pexels photo IDs 5327585, 7659569, and 5452201. The site uses its existing local Inter font and browser-native JavaScript and CSS, with no external UI or animation plugins required.
+
+## Landing page
+
+The homepage highlights appointment booking, directory specialties, a three-step getting-started path, and common booking questions. Specialty names are drawn from the application's seeded directory; sign-in is required to browse currently listed doctors and sessions. Uhai Bora is an appointment tool, not an emergency service.
+
+## Public pages
+
+The public site includes the homepage, [Find care](./services.html), [About Uhai Bora](./about.html), and [How it works](./how-it-works.html), with consistent navigation to login, registration, and the project-level policy pages. Account creation uses `signup.php` and `create-account.php`; newly registered patient passwords are stored with PHP's password hashing API.
+
+## Policies
+
+The landing-page footer links to the project-level [Privacy Policy](./privacy.html), [Terms of Use](./terms.html), [Cookie Notice](./cookies.html), and [Accessibility Statement](./accessibility.html). Review and adapt these pages to the actual operating organization, hosting configuration, service practices, and applicable law before production use.

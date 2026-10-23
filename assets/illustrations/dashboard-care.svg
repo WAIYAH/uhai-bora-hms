@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" role="img" aria-labelledby="title">
+  <title id="title">Your health, all in one place</title>
+  <rect width="560" height="300" rx="24" fill="#eaf1e6"/>
+  <circle cx="432" cy="104" r="75" fill="#d4e5cb"/>
+  <rect x="66" y="47" width="318" height="207" rx="17" fill="#fff"/>
+  <rect x="86" y="67" width="150" height="13" rx="6" fill="#dfe7dd"/>
+  <rect x="86" y="94" width="276" height="66" rx="12" fill="#1d5949"/>
+  <circle cx="122" cy="127" r="21" fill="#c7ec83"/>
+  <path d="M122 116v22m-11-11h22" stroke="#1d5949" stroke-width="4" stroke-linecap="round"/>
+  <rect x="158" y="115" width="115" height="9" rx="4" fill="#f8f8f0"/>
+  <rect x="158" y="132" width="76" height="7" rx="3" fill="#aac5b1"/>
+  <rect x="86" y="179" width="127" height="57" rx="10" fill="#f1f5ee"/>
+  <rect x="225" y="179" width="137" height="57" rx="10" fill="#f1f5ee"/>
+  <path d="M101 219l19-18 16 9 26-20" fill="none" stroke="#78a86f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="120" cy="201" r="4" fill="#1d5949"/><circle cx="162" cy="190" r="4" fill="#1d5949"/>
+  <circle cx="441" cy="203" r="41" fill="#c7ec83"/>
+  <path d="M419 204l15 15 30-34" fill="none" stroke="#1d5949" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M448 40h24m-12-12v24" stroke="#96af82" stroke-width="3" stroke-linecap="round"/>
+</svg>
