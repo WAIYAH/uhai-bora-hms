@@ -1,7 +1,22 @@
+-- Uhai Bora — fresh installation and development data.
+--
+-- WARNING: this script DROPS and recreates every Uhai Bora table. Use it only
+-- for a new, empty database (Docker runs it automatically on a new volume).
+-- Never import it into a database that holds real patient information:
+-- existing databases are upgraded automatically and additively by the app
+-- (see includes/schema.php or run `php database/migrate.php`).
+--
+-- The demo accounts below are for development only. Their password is
+-- published in the README, so delete them or change their passwords before
+-- the system holds real information.
+
 CREATE DATABASE IF NOT EXISTS uhaibora CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE uhaibora;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS login_attempts;
+DROP TABLE IF EXISTS app_meta;
 DROP TABLE IF EXISTS appointment;
 DROP TABLE IF EXISTS schedule;
 DROP TABLE IF EXISTS doctor;
@@ -17,11 +32,6 @@ CREATE TABLE webuser (
     PRIMARY KEY (email),
     CONSTRAINT chk_webuser_type CHECK (usertype IN ('a', 'd', 'p'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO webuser (email, usertype) VALUES
-    ('admin@uhaibora.com', 'a'),
-    ('doctor@uhaibora.com', 'd'),
-    ('patient@uhaibora.com', 'p');
 
 CREATE TABLE specialties (
     id SMALLINT UNSIGNED NOT NULL,
@@ -96,8 +106,6 @@ CREATE TABLE admin (
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO admin (aemail, apassword) VALUES ('admin@uhaibora.com', '123');
-
 CREATE TABLE patient (
     pid INT UNSIGNED NOT NULL AUTO_INCREMENT,
     pemail VARCHAR(255) NOT NULL,
@@ -107,14 +115,15 @@ CREATE TABLE patient (
     pnic VARCHAR(32) NOT NULL,
     pdob DATE NOT NULL,
     ptel VARCHAR(32) NOT NULL,
+    pguardian_name VARCHAR(255) NULL DEFAULT NULL,
+    pconsent_version VARCHAR(20) NULL DEFAULT NULL,
+    pconsented_at DATETIME NULL DEFAULT NULL,
+    pcreated_at DATETIME NULL DEFAULT NULL,
     PRIMARY KEY (pid),
     UNIQUE KEY uq_patient_email (pemail),
     CONSTRAINT fk_patient_webuser FOREIGN KEY (pemail) REFERENCES webuser (email)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO patient (pid, pemail, pname, ppassword, paddress, pnic, pdob, ptel) VALUES
-    (1, 'patient@uhaibora.com', 'Test Patient', '123', 'Sri Lanka', '0000000000', '2000-01-01', '0120000000');
 
 CREATE TABLE doctor (
     docid INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -132,9 +141,6 @@ CREATE TABLE doctor (
     CONSTRAINT fk_doctor_specialty FOREIGN KEY (specialties) REFERENCES specialties (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO doctor (docid, docemail, docname, docpassword, docnic, doctel, specialties) VALUES
-    (1, 'doctor@uhaibora.com', 'Test Doctor', '123', '000000000', '0110000000', 1);
-
 CREATE TABLE schedule (
     scheduleid INT UNSIGNED NOT NULL AUTO_INCREMENT,
     docid INT UNSIGNED NOT NULL,
@@ -144,19 +150,10 @@ CREATE TABLE schedule (
     nop SMALLINT UNSIGNED NOT NULL,
     PRIMARY KEY (scheduleid),
     KEY idx_schedule_doctor_date (docid, scheduledate, scheduletime),
+    KEY idx_schedule_date (scheduledate, scheduletime),
     CONSTRAINT fk_schedule_doctor FOREIGN KEY (docid) REFERENCES doctor (docid)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO schedule (scheduleid, docid, title, scheduledate, scheduletime, nop) VALUES
-    (1, 1, 'General consultation', '2050-01-01', '18:00:00', 50),
-    (2, 1, 'General consultation', '2022-06-10', '20:36:00', 1),
-    (3, 1, 'Follow-up clinic', '2022-06-10', '20:33:00', 1),
-    (4, 1, 'General consultation', '2022-06-10', '12:32:00', 1),
-    (5, 1, 'Follow-up clinic', '2022-06-10', '20:35:00', 1),
-    (6, 1, 'General consultation', '2022-06-10', '20:35:00', 1),
-    (7, 1, 'General consultation', '2022-06-24', '20:36:00', 1),
-    (8, 1, 'Follow-up clinic', '2022-06-10', '13:33:00', 1);
 
 CREATE TABLE appointment (
     appoid INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -165,6 +162,7 @@ CREATE TABLE appointment (
     scheduleid INT UNSIGNED NOT NULL,
     appodate DATE NOT NULL,
     status ENUM('pending', 'confirmed', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+    created_at DATETIME NULL DEFAULT NULL,
     PRIMARY KEY (appoid),
     UNIQUE KEY uq_appointment_number (scheduleid, apponum),
     KEY idx_appointment_patient_date (pid, appodate),
@@ -174,5 +172,66 @@ CREATE TABLE appointment (
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO appointment (appoid, pid, apponum, scheduleid, appodate) VALUES
-    (1, 1, 1, 1, '2022-06-03');
+CREATE TABLE login_attempts (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    email_hash CHAR(64) NOT NULL,
+    ip VARCHAR(45) NOT NULL,
+    attempted_at DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_login_attempts_email (email_hash, attempted_at),
+    KEY idx_login_attempts_ip (ip, attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE audit_log (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    actor_email VARCHAR(255) NULL,
+    actor_role CHAR(1) NULL,
+    action VARCHAR(64) NOT NULL,
+    subject_type VARCHAR(32) NULL,
+    subject_id INT UNSIGNED NULL,
+    created_at DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_audit_created (created_at),
+    KEY idx_audit_subject (subject_type, subject_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE app_meta (
+    meta_key VARCHAR(64) NOT NULL,
+    meta_value VARCHAR(255) NOT NULL,
+    PRIMARY KEY (meta_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO app_meta (meta_key, meta_value) VALUES ('schema_version', '1');
+
+-- ---------------------------------------------------------------------------
+-- Development demo data. Password for every demo account: UhaiBora-Demo-2026
+-- (stored only as a bcrypt hash). The .test domain is reserved and never routable.
+-- ---------------------------------------------------------------------------
+INSERT INTO webuser (email, usertype) VALUES
+    ('admin@uhaibora.test', 'a'),
+    ('doctor@uhaibora.test', 'd'),
+    ('paediatrics@uhaibora.test', 'd'),
+    ('patient@uhaibora.test', 'p');
+
+INSERT INTO admin (aemail, apassword) VALUES
+    ('admin@uhaibora.test', '$2y$10$wbOekvF0so3RVPV4PbSUdOt4y2AkqHvgiGg9pWGt6gtIIuBjSSC4G');
+
+INSERT INTO doctor (docid, docemail, docname, docpassword, docnic, doctel, specialties) VALUES
+    (1, 'doctor@uhaibora.test', 'Demo Doctor (General Practice)', '$2y$10$wbOekvF0so3RVPV4PbSUdOt4y2AkqHvgiGg9pWGt6gtIIuBjSSC4G', 'DEMO-D-0001', '+254 000 000 001', 18),
+    (2, 'paediatrics@uhaibora.test', 'Demo Doctor (Paediatrics)', '$2y$10$wbOekvF0so3RVPV4PbSUdOt4y2AkqHvgiGg9pWGt6gtIIuBjSSC4G', 'DEMO-D-0002', '+254 000 000 002', 38);
+
+INSERT INTO patient (pid, pemail, pname, ppassword, paddress, pnic, pdob, ptel, pconsent_version, pconsented_at, pcreated_at) VALUES
+    (1, 'patient@uhaibora.test', 'Demo Patient', '$2y$10$wbOekvF0so3RVPV4PbSUdOt4y2AkqHvgiGg9pWGt6gtIIuBjSSC4G', 'Demo address, Nairobi', 'DEMO-P-0001', '1990-01-01', '+254 000 000 003', '2026-10-24', NOW(), NOW());
+
+-- Session dates are relative to the install date so the demo always has upcoming sessions.
+INSERT INTO schedule (scheduleid, docid, title, scheduledate, scheduletime, nop) VALUES
+    (1, 1, 'General consultation', CURDATE() + INTERVAL 1 DAY, '09:00:00', 10),
+    (2, 1, 'Follow-up clinic', CURDATE() + INTERVAL 2 DAY, '14:00:00', 6),
+    (3, 2, 'Children''s clinic', CURDATE() + INTERVAL 3 DAY, '09:30:00', 8),
+    (4, 1, 'General consultation', CURDATE() + INTERVAL 5 DAY, '10:30:00', 8),
+    (5, 2, 'Children''s clinic', CURDATE() + INTERVAL 8 DAY, '11:00:00', 1),
+    (6, 1, 'General consultation', CURDATE() - INTERVAL 7 DAY, '09:00:00', 5);
+
+INSERT INTO appointment (appoid, pid, apponum, scheduleid, appodate, status, created_at) VALUES
+    (1, 1, 1, 1, CURDATE(), 'pending', NOW()),
+    (2, 1, 1, 6, CURDATE() - INTERVAL 10 DAY, 'completed', NOW() - INTERVAL 10 DAY);

@@ -1,139 +1,111 @@
 <?php
-session_start();
+require dirname(__DIR__) . '/includes/bootstrap.php';
+$user = require_role('p');
+$patientId = (int) $user['id'];
 
-if (($_SESSION['usertype'] ?? '') !== 'p' || empty($_SESSION['user'])) {
-    header('Location: ../login.php');
-    exit;
+$appointmentId = is_post() ? post_int('id') : query_int('id');
+if (!$appointmentId) {
+    not_found();
+}
+$booking = db_one(appointment_select_sql() . ' WHERE a.appoid = ? AND a.pid = ?', [$appointmentId, $patientId]);
+if (!$booking) {
+    not_found();
 }
 
-require_once '../connection.php';
-$appointmentId = filter_input(
-    $_SERVER['REQUEST_METHOD'] === 'POST' ? INPUT_POST : INPUT_GET,
-    'id',
-    FILTER_VALIDATE_INT
-);
-$patientLookup = $database->prepare('SELECT pid FROM patient WHERE pemail = ?');
-$patientLookup->bind_param('s', $_SESSION['user']);
-$patientLookup->execute();
-$patient = $patientLookup->get_result()->fetch_assoc();
-
-if (!$patient || !$appointmentId) {
-    header('Location: appointment.php');
-    exit;
-}
-
-$appointmentLookup = $database->prepare('SELECT appoid, scheduleid FROM appointment WHERE appoid = ? AND pid = ?');
-$appointmentLookup->bind_param('ii', $appointmentId, $patient['pid']);
-$appointmentLookup->execute();
-$appointment = $appointmentLookup->get_result()->fetch_assoc();
-
-if (!$appointment) {
-    header('Location: appointment.php');
-    exit;
-}
-
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $newScheduleId = filter_input(INPUT_POST, 'scheduleid', FILTER_VALIDATE_INT);
-
-    if (!$newScheduleId) {
-        $error = 'Choose an available appointment time.';
-    } else {
-        $database->begin_transaction();
-        $lockAppointment = $database->prepare('SELECT appoid FROM appointment WHERE appoid = ? AND pid = ? FOR UPDATE');
-        $lockAppointment->bind_param('ii', $appointmentId, $patient['pid']);
-        $lockAppointment->execute();
-        $appointmentExists = $lockAppointment->get_result()->num_rows === 1;
-
-        $scheduleLookup = $database->prepare('SELECT nop FROM schedule WHERE scheduleid = ? AND scheduledate >= CURDATE() FOR UPDATE');
-        $scheduleLookup->bind_param('i', $newScheduleId);
-        $scheduleLookup->execute();
-        $schedule = $scheduleLookup->get_result()->fetch_assoc();
-
-        if (!$appointmentExists || !$schedule) {
-            $database->rollback();
-            $error = 'That appointment time is no longer available.';
-        } else {
-            $reservationsQuery = $database->prepare('SELECT apponum FROM appointment WHERE scheduleid = ? AND appoid <> ?');
-            $reservationsQuery->bind_param('ii', $newScheduleId, $appointmentId);
-            $reservationsQuery->execute();
-            $occupiedNumbers = [];
-            $reservations = $reservationsQuery->get_result();
-            while ($reservation = $reservations->fetch_assoc()) {
-                $occupiedNumbers[(int) $reservation['apponum']] = true;
-            }
-
-            $appointmentNumber = 1;
-            while (isset($occupiedNumbers[$appointmentNumber]) && $appointmentNumber <= (int) $schedule['nop']) {
-                $appointmentNumber++;
-            }
-
-            if ($appointmentNumber > (int) $schedule['nop']) {
-                $database->rollback();
-                $error = 'That appointment time has just filled up. Please choose another.';
-            } else {
-                $bookingDate = date('Y-m-d');
-                $update = $database->prepare("UPDATE appointment SET scheduleid = ?, apponum = ?, appodate = ?, status = 'pending' WHERE appoid = ? AND pid = ?");
-                $update->bind_param('iisii', $newScheduleId, $appointmentNumber, $bookingDate, $appointmentId, $patient['pid']);
-
-                if (!$update->execute()) {
-                    $database->rollback();
-                    error_log('Unable to reschedule appointment: ' . $database->error);
-                    http_response_code(500);
-                    exit('Unable to update your appointment.');
-                }
-
-                $database->commit();
-                header('Location: appointment.php?action=booking-updated');
-                exit;
-            }
-        }
+if (is_post()) {
+    $newSession = post_int('scheduleid');
+    if (!$newSession) {
+        fail_validation(['scheduleid' => 'Choose a new session.'], 'patient/reschedule.php', ['id' => $appointmentId]);
     }
+    $result = reschedule_appointment($patientId, $appointmentId, $newSession);
+    if ($result['ok']) {
+        audit('appointment.rescheduled', 'appointment', $appointmentId);
+        flash('success', 'Your booking ' . appointment_reference($appointmentId) . ' has been moved. Its status is “Pending confirmation” until the clinic confirms the new time.');
+        redirect('patient/appointment.php', ['id' => $appointmentId]);
+    }
+    fail_validation(['scheduleid' => booking_error_message($result['error'])], 'patient/reschedule.php', ['id' => $appointmentId]);
 }
 
-$sessions = $database->prepare(
-    'SELECT s.scheduleid, s.title, s.scheduledate, s.scheduletime, s.nop, d.docname,
-        (SELECT COUNT(*) FROM appointment a WHERE a.scheduleid = s.scheduleid AND a.appoid <> ?) AS booked
-     FROM schedule s
-     INNER JOIN doctor d ON d.docid = s.docid
-     WHERE s.scheduledate >= CURDATE()
-     ORDER BY s.scheduledate, s.scheduletime'
-);
-$sessions->bind_param('i', $appointmentId);
-$sessions->execute();
-$availableSessions = $sessions->get_result();
+$canChange = (int) $booking['is_upcoming'] === 1 && in_array($booking['status'], ['pending', 'confirmed'], true);
+$scope = query_string('scope') === 'all' ? 'all' : 'doctor';
+$sessions = [];
+if ($canChange) {
+    $sessions = upcoming_sessions(
+        ['patient' => $patientId, 'doctor' => $scope === 'doctor' ? (int) $booking['docid'] : null],
+        200,
+        0
+    );
+    $sessions = array_values(array_filter($sessions, function ($row) use ($booking) {
+        return (int) $row['scheduleid'] !== (int) $booking['scheduleid']
+            && $row['my_appointment'] === null
+            && spaces_left($row) > 0;
+    }));
+}
+$groups = [];
+foreach ($sessions as $row) {
+    $groups[$row['scheduledate']][] = $row;
+}
+
+app_start([
+    'title' => 'Reschedule booking',
+    'nav' => 'bookings',
+    'back' => ['Back to booking', 'patient/appointment.php?id=' . $appointmentId],
+    'lead' => 'Choose a new session. Your current place is kept until the move is confirmed.',
+]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/admin.css">
-    <title>Uhai Bora | Reschedule</title>
-</head>
-<body>
-    <main class="session-editor" style="max-width: 680px; margin: 70px auto;">
-        <a href="appointment.php" class="care-link">← Back to my appointments</a>
-        <h1>Choose a new appointment time</h1>
-        <?php if ($error !== ''): ?>
-            <p role="alert"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
-        <?php endif; ?>
-        <form method="post" action="reschedule.php" class="reschedule-form">
-            <input type="hidden" name="id" value="<?php echo (int) $appointmentId; ?>">
-            <label for="scheduleid">Available sessions</label>
-            <select id="scheduleid" name="scheduleid" class="input-text" required>
-                <option value="">Choose a session</option>
-                <?php while ($session = $availableSessions->fetch_assoc()): ?>
-                    <?php if ((int) $session['booked'] < (int) $session['nop'] || (int) $session['scheduleid'] === (int) $appointment['scheduleid']): ?>
-                        <option value="<?php echo (int) $session['scheduleid']; ?>">
-                            <?php echo htmlspecialchars($session['title'] . ' — Dr. ' . $session['docname'] . ' — ' . $session['scheduledate'] . ' at ' . substr($session['scheduletime'], 0, 5), ENT_QUOTES, 'UTF-8'); ?>
-                        </option>
-                    <?php endif; ?>
-                <?php endwhile; ?>
-            </select>
-            <button type="submit" class="login-btn btn-primary btn">Save new time</button>
+<section class="panel notice" aria-labelledby="current-title">
+    <h2 id="current-title">Current booking</h2>
+    <p><strong><?= e($booking['title']) ?></strong> with <?= e($booking['docname']) ?> — <?= session_when($booking['scheduledate'], $booking['scheduletime']) ?> <?= status_badge($booking['status']) ?></p>
+</section>
+
+<?php if (!$canChange): ?>
+    <div class="alert alert--warning"><?= icon('alert') ?><p>This booking can no longer be changed because the session has started, finished or been cancelled. <a href="<?= e(url('patient/schedule.php')) ?>">Book a new session</a></p></div>
+<?php else: ?>
+    <ul class="tabs">
+        <li><a href="<?= e(url('patient/reschedule.php', ['id' => $appointmentId])) ?>"<?= $scope === 'doctor' ? ' aria-current="page"' : '' ?>>Same doctor</a></li>
+        <li><a href="<?= e(url('patient/reschedule.php', ['id' => $appointmentId, 'scope' => 'all'])) ?>"<?= $scope === 'all' ? ' aria-current="page"' : '' ?>>All doctors</a></li>
+    </ul>
+    <?php if (!$sessions): ?>
+        <?= empty_state(
+            'No other sessions with places',
+            $scope === 'doctor' ? 'There are no other upcoming sessions with places for this doctor. Try sessions with all doctors.' : 'There are no other upcoming sessions with places right now.',
+            $scope === 'doctor' ? button_link('Show all doctors', 'patient/reschedule.php', 'secondary', ['id' => $appointmentId, 'scope' => 'all']) : ''
+        ) ?>
+    <?php else: ?>
+        <?= error_summary(null, ['scheduleid' => 'new-session-first']) ?>
+        <form class="form" method="post" action="<?= e(url('patient/reschedule.php')) ?>" data-submit-once>
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= (int) $appointmentId ?>">
+            <fieldset>
+                <legend>Choose a new session</legend>
+                <?php if (field_error('scheduleid') !== ''): ?>
+                    <p class="field__error" id="scheduleid-error"><span class="visually-hidden">Error: </span><?= e(field_error('scheduleid')) ?></p>
+                <?php endif; ?>
+                <?php $first = true; foreach ($groups as $date => $rows): ?>
+                    <div class="date-group">
+                        <h3 class="date-group__title"><?= e(format_date_long($date)) ?></h3>
+                        <ul class="record-list">
+                            <?php foreach ($rows as $row): $radioId = 'session-' . (int) $row['scheduleid']; ?>
+                                <li class="record">
+                                    <div class="checkbox">
+                                        <input class="checkbox__input" type="radio" name="scheduleid" id="<?= $first ? 'new-session-first' : e($radioId) ?>" value="<?= (int) $row['scheduleid'] ?>" required<?= field_error('scheduleid') !== '' ? ' aria-describedby="scheduleid-error"' : '' ?>>
+                                        <label class="checkbox__label" for="<?= $first ? 'new-session-first' : e($radioId) ?>">
+                                            <strong><?= e(format_time($row['scheduletime'])) ?> · <?= e($row['title']) ?></strong><br>
+                                            <span class="muted"><?= e($row['docname']) ?><?= $row['sname'] ? ' · ' . e($row['sname']) : '' ?> · <?= e(plural(spaces_left($row), 'place')) ?> left</span>
+                                        </label>
+                                    </div>
+                                </li>
+                            <?php $first = false; endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endforeach; ?>
+            </fieldset>
+            <div class="form-actions">
+                <button class="button button--primary" type="submit" data-loading-label="Moving your booking…">Move my booking</button>
+                <a class="button button--ghost" href="<?= e(url('patient/appointment.php', ['id' => $appointmentId])) ?>">Keep current booking</a>
+            </div>
         </form>
-    </main>
-</body>
-</html>
+    <?php endif; ?>
+<?php endif; ?>
+<?php
+app_end();

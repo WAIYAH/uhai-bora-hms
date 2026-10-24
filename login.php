@@ -1,113 +1,93 @@
 <?php
-session_start();
-date_default_timezone_set('Asia/Colombo');
-$_SESSION['date'] = date('Y-m-d');
-require_once 'connection.php';
+require __DIR__ . '/includes/bootstrap.php';
 
-$error = '';
-$csrfToken = $_SESSION['login_csrf'] ?? '';
-if ($csrfToken === '') {
-    $csrfToken = bin2hex(random_bytes(32));
-    $_SESSION['login_csrf'] = $csrfToken;
+$next = query_string('next');
+if (is_post()) {
+    $next = post_string('next');
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submittedToken = $_POST['csrf_token'] ?? '';
-    if (!is_string($submittedToken) || !hash_equals($csrfToken, $submittedToken)) {
-        $error = 'Your sign-in session expired. Refresh this page and try again.';
-    } else {
-        $submittedEmail = $_POST['useremail'] ?? '';
-        $submittedPassword = $_POST['userpassword'] ?? '';
-        $email = is_string($submittedEmail) ? trim($submittedEmail) : '';
-        $password = is_string($submittedPassword) ? $submittedPassword : '';
-        $lookup = $database->prepare('SELECT usertype FROM webuser WHERE email = ?');
-        $lookup->bind_param('s', $email);
-        $lookup->execute();
-        $account = $lookup->get_result()->fetch_assoc();
+$user = current_user();
+if ($user) {
+    $destination = safe_next($next, $user['role']) ?? role_info($user['role'])['home'];
+    header('Location: ' . url($destination), true, 303);
+    exit;
+}
 
-        $tables = [
-            'a' => ['admin', 'aemail', 'apassword', 'admin/index.php'],
-            'd' => ['doctor', 'docemail', 'docpassword', 'doctor/index.php'],
-            'p' => ['patient', 'pemail', 'ppassword', 'patient/index.php'],
-        ];
-
-        if ($account && isset($tables[$account['usertype']])) {
-            [$table, $emailColumn, $passwordColumn, $destination] = $tables[$account['usertype']];
-            $credentialQuery = $database->prepare("SELECT {$passwordColumn} AS password FROM {$table} WHERE {$emailColumn} = ?");
-            $credentialQuery->bind_param('s', $email);
-            $credentialQuery->execute();
-            $credential = $credentialQuery->get_result()->fetch_assoc();
-            $storedPassword = (string) ($credential['password'] ?? '');
-            $passwordMatches = $storedPassword !== '' && (
-                password_verify($password, $storedPassword) ||
-                hash_equals($storedPassword, $password)
-            );
-
-            if ($passwordMatches) {
-                session_regenerate_id(true);
-                $_SESSION['user'] = $email;
-                $_SESSION['usertype'] = $account['usertype'];
-                header('Location: ' . $destination);
-                exit;
-            }
-        }
-
-        $error = 'We could not verify those details. Check your email and password and try again.';
+if (is_post()) {
+    $email = post_string('email');
+    $password = post_secret('password');
+    $errors = [];
+    if ($email === '') {
+        $errors['email'] = 'Enter your email address.';
+    } elseif (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        $errors['email'] = 'Enter an email address in the correct format, like name@example.com.';
     }
+    if ($password === '') {
+        $errors['password'] = 'Enter your password.';
+    }
+
+    if (!$errors) {
+        $result = attempt_login($email, $password);
+        if ($result['ok']) {
+            $role = $result['role'];
+            $destination = safe_next($next, $role) ?? role_info($role)['home'];
+            header('Location: ' . url($destination), true, 303);
+            exit;
+        }
+        if ($result['locked_minutes'] !== null) {
+            $errors['email'] = 'Too many unsuccessful attempts. For your security, please wait '
+                . plural((int) $result['locked_minutes'], 'minute') . ' before trying again.';
+        } else {
+            $errors['email'] = 'The email address or password is not correct. Check them and try again.';
+        }
+    }
+    fail_validation($errors, 'login.php', ['next' => $next]);
 }
+
+$registerQuery = $next !== '' ? ['next' => $next] : [];
+
+page_start([
+    'title' => 'Login',
+    'description' => 'Log in to Uhai Bora to book appointments and manage your bookings.',
+    'body_class' => 'page-auth',
+]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <script src="js/auth.js" defer></script>
-    <title>Log in | Uhai Bora</title>
-</head>
-<body class="auth-page">
-    <main class="auth-layout">
-        <section class="auth-panel">
-            <a href="index.html" class="brand auth-brand" aria-label="Uhai Bora home">
-                <img class="brand-logo" src="assets/brand/uhai-bora.svg" alt="Uhai Bora">
-            </a>
-            <a class="auth-back-link" href="index.html"><span aria-hidden="true">←</span> Back to home</a>
-            <div class="auth-content">
-                <p class="auth-eyebrow">YOUR CARE, ALL IN ONE PLACE</p>
-                <h1>Welcome<br>back.</h1>
-                <p class="auth-intro">Sign in to find doctors, explore available sessions, and keep up with your appointments.</p>
-                <form method="post" action="login.php" class="auth-form">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-                    <label class="auth-label" for="useremail">Email address</label>
-                    <input id="useremail" type="email" name="useremail" class="auth-input" autocomplete="username" placeholder="you@example.com" required>
-                    <label class="auth-label" for="userpassword">Password</label>
-                    <div class="password-field">
-                        <input id="userpassword" type="password" name="userpassword" class="auth-input" autocomplete="current-password" placeholder="Enter your password" required>
-                        <button class="password-toggle" type="button" data-password-toggle="userpassword" aria-label="Show password">Show</button>
-                    </div>
-                <?php if ($error !== ''): ?>
-                    <p class="auth-error" role="alert"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
-                <?php endif; ?>
-                    <button type="submit" class="auth-submit">Log in <span aria-hidden="true">↗</span></button>
-                </form>
-                <p class="auth-switch">New to Uhai Bora? <a href="signup.php">Create a patient account</a></p>
-            </div>
-            <footer class="auth-footer">
-                <a href="privacy.html">Privacy</a>
-                <a href="terms.html">Terms</a>
-                <span>© <?php echo date('Y'); ?> Uhai Bora</span>
-            </footer>
+<div class="container auth">
+    <div class="auth__grid">
+        <section class="auth__card" aria-labelledby="login-title">
+            <p class="eyebrow">Welcome back</p>
+            <h1 id="login-title">Log in to your account</h1>
+            <p class="muted">Patients, doctors and clinic administrators all log in here.</p>
+            <?= error_summary() ?>
+            <form class="form" method="post" action="<?= e(url('login.php')) ?>" novalidate data-submit-once>
+                <?= csrf_field() ?>
+                <input type="hidden" name="next" value="<?= e($next) ?>">
+                <?= input_field([
+                    'name' => 'email', 'label' => 'Email address', 'type' => 'email', 'autocomplete' => 'username',
+                    'attrs' => ['inputmode' => 'email', 'spellcheck' => 'false', 'autocapitalize' => 'none'],
+                ]) ?>
+                <?= input_field([
+                    'name' => 'password', 'label' => 'Password', 'type' => 'password', 'autocomplete' => 'current-password',
+                ]) ?>
+                <div class="button-row">
+                    <button class="button button--primary" type="submit" data-loading-label="Logging in…">Log in</button>
+                    <a href="<?= e(url('contact.php')) ?>#account-help">Forgotten your password?</a>
+                </div>
+            </form>
+            <p class="auth__switch">New to Uhai Bora? <a href="<?= e(url('signup.php', $registerQuery)) ?>">Register for a patient account</a></p>
         </section>
-        <aside class="auth-visual auth-visual-login" aria-label="A doctor listening to a patient">
-            <img src="assets/photos/doctor-consultation.jpg" alt="A clinician offering a reassuring hand to a patient">
-            <div class="auth-visual-overlay">
-                <span class="auth-visual-kicker">CARE STARTS WITH CONNECTION</span>
-                <p>Find the right care,<br><em>one step at a time.</em></p>
-                <span class="auth-visual-caption">Explore doctors and appointment sessions in one place.</span>
-            </div>
-            <a class="auth-image-credit" href="https://unsplash.com/" target="_blank" rel="noopener noreferrer">Photo via Unsplash</a>
+        <aside class="auth__aside" aria-label="About your account">
+            <figure class="auth__photo">
+                <?= picture('hands-reassurance', 'Two people holding hands in reassurance.', [640, 960, 1400], 960, 960, 640, '(min-width: 56em) 40vw, 100vw') ?>
+                <figcaption>Illustrative photo</figcaption>
+            </figure>
+            <ul class="check-list">
+                <li><?= icon('calendar') ?><span>See your upcoming appointments and their status.</span></li>
+                <li><?= icon('refresh') ?><span>Reschedule or cancel when your plans change.</span></li>
+                <li><?= icon('lock') ?><span>For your privacy you’ll be signed out after 30 minutes without activity.</span></li>
+            </ul>
         </aside>
-    </main>
-</body>
-</html>
+    </div>
+</div>
+<?php
+page_end();

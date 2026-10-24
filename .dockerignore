@@ -1,0 +1,9 @@
+.git
+.gitignore
+.dockerignore
+.vscode
+.env
+Dockerfile
+docker-compose.yml
+*.md
+SQL_Database_uhaibora.sql

@@ -1,341 +1,99 @@
 <?php
-session_start();
-if (($_SESSION['usertype'] ?? '') !== 'p' || empty($_SESSION['user'])) {
-    header('Location: ../login.php');
-    exit;
+require dirname(__DIR__) . '/includes/bootstrap.php';
+$user = require_role('p');
+
+$filters = [
+    'q' => mb_substr(query_string('q'), 0, 80),
+    'specialty' => query_int('specialty'),
+    'doctor' => query_int('doctor'),
+    'from' => query_date('from'),
+    'patient' => (int) $user['id'],
+];
+$page = query_int('page') ?? 1;
+$perPage = 30;
+$rows = upcoming_sessions($filters, $perPage + 1, ($page - 1) * $perPage);
+$hasMore = count($rows) > $perPage;
+$rows = array_slice($rows, 0, $perPage);
+
+$doctorName = null;
+if ($filters['doctor']) {
+    $doctorName = db_value('SELECT docname FROM doctor WHERE docid = ?', [$filters['doctor']]);
 }
+$specialtyOptions = [];
+foreach (db_all('SELECT DISTINCT sp.id, sp.sname FROM specialties sp INNER JOIN doctor d ON d.specialties = sp.id ORDER BY sp.sname') as $row) {
+    $specialtyOptions[(int) $row['id']] = $row['sname'];
+}
+$activeQuery = array_filter([
+    'q' => $filters['q'], 'specialty' => $filters['specialty'], 'doctor' => $filters['doctor'], 'from' => $filters['from'],
+]);
+
+$groups = [];
+foreach ($rows as $row) {
+    $groups[$row['scheduledate']][] = $row;
+}
+
+app_start([
+    'title' => 'Book an appointment',
+    'nav' => 'book',
+    'lead' => 'Choose a session with places available. Times are shown in East Africa Time.',
+]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/animations.css">  
-    <link rel="stylesheet" href="../css/main.css">  
-    <link rel="stylesheet" href="../css/admin.css">
-        
-    <title>Sessions</title>
-    <style>
-        .popup{
-            animation: transitionIn-Y-bottom 0.5s;
-        }
-        .sub-table{
-            animation: transitionIn-Y-bottom 0.5s;
-        }
-</style>
-</head>
-<body>
-    <?php
+<form class="filters" method="get" action="<?= e(url('patient/schedule.php')) ?>" role="search" aria-label="Filter sessions">
+    <?= input_field(['name' => 'q', 'label' => 'Doctor or session', 'type' => 'search', 'required' => false, 'value' => $filters['q'], 'attrs' => ['maxlength' => '80']]) ?>
+    <?= select_field(['name' => 'specialty', 'label' => 'Specialty', 'required' => false, 'value' => (string) ($filters['specialty'] ?? ''), 'placeholder' => 'All specialties', 'options' => $specialtyOptions]) ?>
+    <?= input_field(['name' => 'from', 'label' => 'From date', 'type' => 'date', 'required' => false, 'value' => $filters['from'], 'attrs' => ['min' => today()]]) ?>
+    <?php if ($filters['doctor']): ?><input type="hidden" name="doctor" value="<?= (int) $filters['doctor'] ?>"><?php endif; ?>
+    <div class="filters__actions">
+        <button class="button button--primary" type="submit"><?= icon('search') ?>Show sessions</button>
+        <?php if ($activeQuery): ?><a class="button button--ghost" href="<?= e(url('patient/schedule.php')) ?>">Clear</a><?php endif; ?>
+    </div>
+</form>
 
-    //learn from w3schools.com
+<?php if ($doctorName !== null): ?>
+    <div class="alert alert--info notice"><?= icon('info') ?><p>Showing sessions with <strong><?= e($doctorName) ?></strong>. <a href="<?= e(url('patient/schedule.php')) ?>">Show all doctors</a></p></div>
+<?php endif; ?>
 
-    if(isset($_SESSION["user"])){
-        if(($_SESSION["user"])=="" or $_SESSION['usertype']!='p'){
-            header("location: ../login.php");
-        }else{
-            $useremail=$_SESSION["user"];
-        }
-
-    }else{
-        header("location: ../login.php");
-    }
-    
-
-    //import database
-    include("../connection.php");
-    $sqlmain= "select * from patient where pemail=?";
-    $stmt = $database->prepare($sqlmain);
-    $stmt->bind_param("s",$useremail);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $userfetch=$result->fetch_assoc();
-    $userid= $userfetch["pid"];
-    $username=$userfetch["pname"];
-
-
-    //echo $userid;
-    //echo $username;
-    
-    date_default_timezone_set('Asia/Kolkata');
-
-    $today = date('Y-m-d');
-
-
- //echo $userid;
- ?>
- <div class="container">
-     <div class="menu">
-     <table class="menu-container" border="0">
-             <tr>
-                 <td style="padding:10px" colspan="2">
-                     <table border="0" class="profile-container">
-                         <tr>
-                             <td width="30%" style="padding-left:20px" >
-                                 <img src="../img/user.png" alt="" width="100%" style="border-radius:50%">
-                             </td>
-                             <td style="padding:0px;margin:0px;">
-                                 <p class="profile-title"><?php echo substr($username,0,13)  ?>..</p>
-                                 <p class="profile-subtitle"><?php echo substr($useremail,0,22)  ?></p>
-                             </td>
-                         </tr>
-                         <tr>
-                             <td colspan="2">
-                                 <a href="../logout.php" ><input type="button" value="Log out" class="logout-btn btn-primary-soft btn"></a>
-                             </td>
-                         </tr>
-                 </table>
-                 </td>
-             </tr>
-             <tr class="menu-row" >
-                    <td class="menu-btn menu-icon-home " >
-                        <a href="index.php" class="non-style-link-menu "><div><p class="menu-text">Home</p></a></div></a>
-                    </td>
-                </tr>
-                <tr class="menu-row">
-                    <td class="menu-btn menu-icon-doctor">
-                        <a href="doctors.php" class="non-style-link-menu"><div><p class="menu-text">All Doctors</p></a></div>
-                    </td>
-                </tr>
-                
-                <tr class="menu-row" >
-                    <td class="menu-btn menu-icon-session menu-active menu-icon-session-active">
-                        <a href="schedule.php" class="non-style-link-menu non-style-link-menu-active"><div><p class="menu-text">Scheduled Sessions</p></div></a>
-                    </td>
-                </tr>
-                <tr class="menu-row" >
-                    <td class="menu-btn menu-icon-appoinment">
-                        <a href="appointment.php" class="non-style-link-menu"><div><p class="menu-text">My Bookings</p></a></div>
-                    </td>
-                </tr>
-                <tr class="menu-row" >
-                    <td class="menu-btn menu-icon-settings">
-                        <a href="settings.php" class="non-style-link-menu"><div><p class="menu-text">Settings</p></a></div>
-                    </td>
-                </tr>
-                
-            </table>
-        </div>
-        <?php
-
-                $sqlmain= "select * from schedule inner join doctor on schedule.docid=doctor.docid where schedule.scheduledate>='$today'  order by schedule.scheduledate asc";
-                $sqlpt1="";
-                $insertkey="";
-                $q='';
-                $searchtype="All";
-                        if($_POST){
-                        //print_r($_POST);
-                        
-                        if(!empty($_POST["search"])){
-                            /*TODO: make and understand */
-                            $keyword=$_POST["search"];
-                            $sqlmain= "select * from schedule inner join doctor on schedule.docid=doctor.docid where schedule.scheduledate>='$today' and (doctor.docname='$keyword' or doctor.docname like '$keyword%' or doctor.docname like '%$keyword' or doctor.docname like '%$keyword%' or schedule.title='$keyword' or schedule.title like '$keyword%' or schedule.title like '%$keyword' or schedule.title like '%$keyword%' or schedule.scheduledate like '$keyword%' or schedule.scheduledate like '%$keyword' or schedule.scheduledate like '%$keyword%' or schedule.scheduledate='$keyword' )  order by schedule.scheduledate asc";
-                            //echo $sqlmain;
-                            $insertkey=$keyword;
-                            $searchtype="Search Result : ";
-                            $q='"';
-                        }
-
-                    }
-
-
-                $result= $database->query($sqlmain)
-
-
-                ?>
-                  
-        <div class="dash-body">
-            <table border="0" width="100%" style=" border-spacing: 0;margin:0;padding:0;margin-top:25px; ">
-                <tr >
-                    <td width="13%" >
-                    <a href="schedule.php" ><button  class="login-btn btn-primary-soft btn btn-icon-back"  style="padding-top:11px;padding-bottom:11px;margin-left:20px;width:125px"><font class="tn-in-text">Back</font></button></a>
-                    </td>
-                    <td >
-                            <form action="" method="post" class="header-search">
-
-                                        <input type="search" name="search" class="input-text header-searchbar" placeholder="Search Doctor name or Email or Date (YYYY-MM-DD)" list="doctors" value="<?php  echo $insertkey ?>">&nbsp;&nbsp;
-                                        
-                                        <?php
-                                            echo '<datalist id="doctors">';
-                                            $list11 = $database->query("select DISTINCT * from  doctor;");
-                                            $list12 = $database->query("select DISTINCT * from  schedule GROUP BY title;");
-                                            
-
-                                            
-
-
-                                            for ($y=0;$y<$list11->num_rows;$y++){
-                                                $row00=$list11->fetch_assoc();
-                                                $d=$row00["docname"];
-                                               
-                                                echo "<option value='$d'><br/>";
-                                               
-                                            };
-
-
-                                            for ($y=0;$y<$list12->num_rows;$y++){
-                                                $row00=$list12->fetch_assoc();
-                                                $d=$row00["title"];
-                                               
-                                                echo "<option value='$d'><br/>";
-                                                                                         };
-
-                                        echo ' </datalist>';
-            ?>
-                                        
-                                
-                                        <input type="Submit" value="Search" class="login-btn btn-primary btn" style="padding-left: 25px;padding-right: 25px;padding-top: 10px;padding-bottom: 10px;">
-                                        </form>
-                    </td>
-                    <td width="15%">
-                        <p style="font-size: 14px;color: rgb(119, 119, 119);padding: 0;margin: 0;text-align: right;">
-                            Today's Date
-                        </p>
-                        <p class="heading-sub12" style="padding: 0;margin: 0;">
-                            <?php 
-
-                                
-                                echo $today;
-
-                                
-
-                        ?>
-                        </p>
-                    </td>
-                    <td width="10%">
-                        <button  class="btn-label"  style="display: flex;justify-content: center;align-items: center;"><img src="../img/calendar.svg" width="100%"></button>
-                    </td>
-
-
-                </tr>
-                
-                
-                <tr>
-                    <td colspan="4" style="padding-top:10px;width: 100%;" >
-                        <p class="heading-main12" style="margin-left: 45px;font-size:18px;color:rgb(49, 49, 49)"><?php echo $searchtype." Sessions"."(".$result->num_rows.")"; ?> </p>
-                        <p class="heading-main12" style="margin-left: 45px;font-size:22px;color:rgb(49, 49, 49)"><?php echo $q.$insertkey.$q ; ?> </p>
-                    </td>
-                    
-                </tr>
-                
-                
-                
-                <tr>
-                   <td colspan="4">
-                       <center>
-                        <div class="abc scroll">
-                        <table width="100%" class="sub-table scrolldown" border="0" style="padding: 50px;border:none">
-                            
-                        <tbody>
-                        
-                            <?php
-
-                                
-                                
-
-                                if($result->num_rows==0){
-                                    echo '<tr>
-                                    <td colspan="4">
-                                    <br><br><br><br>
-                                    <center>
-                                    <img src="../img/notfound.svg" width="25%">
-                                    
-                                    <br>
-                                    <p class="heading-main12" style="margin-left: 45px;font-size:20px;color:rgb(49, 49, 49)">We  couldnt find anything related to your keywords !</p>
-                                    <a class="non-style-link" href="schedule.php"><button  class="login-btn btn-primary-soft btn"  style="display: flex;justify-content: center;align-items: center;margin-left:20px;">&nbsp; Show all Sessions &nbsp;</font></button>
-                                    </a>
-                                    </center>
-                                    <br><br><br><br>
-                                    </td>
-                                    </tr>';
-                                    
-                                }
-                                else{
-                                    //echo $result->num_rows;
-                                for ( $x=0; $x<($result->num_rows);$x++){
-                                    echo "<tr>";
-                                    for($q=0;$q<3;$q++){
-                                        $row=$result->fetch_assoc();
-                                        if (!isset($row)){
-                                            break;
-                                        };
-                                        $scheduleid=$row["scheduleid"];
-                                        $title=$row["title"];
-                                        $docname=$row["docname"];
-                                        $scheduledate=$row["scheduledate"];
-                                        $scheduletime=$row["scheduletime"];
-
-                                        if($scheduleid==""){
-                                            break;
-                                        }
-
-                                        echo '
-                                        <td style="width: 25%;">
-                                                <div  class="dashboard-items search-items"  >
-                                                
-                                                    <div style="width:100%">
-                                                            <div class="h1-search">
-                                                                '.substr($title,0,21).'
-                                                            </div><br>
-                                                            <div class="h3-search">
-                                                                '.substr($docname,0,30).'
-                                                            </div>
-                                                            <div class="h4-search">
-                                                                '.$scheduledate.'<br>Starts: <b>@'.substr($scheduletime,0,5).'</b> (24h)
-                                                            </div>
-                                                            <br>
-                                                            <a href="booking.php?id='.$scheduleid.'" ><button  class="login-btn btn-primary-soft btn "  style="padding-top:11px;padding-bottom:11px;width:100%"><font class="tn-in-text">Book Now</font></button></a>
-                                                    </div>
-                                                            
-                                                </div>
-                                            </td>';
-
-                                    }
-                                    echo "</tr>";
-                                    
-                                    
-                                    // echo '<tr>
-                                    //     <td> &nbsp;'.
-                                    //     substr($title,0,30)
-                                    //     .'</td>
-                                        
-                                    //     <td style="text-align:center;">
-                                    //         '.substr($scheduledate,0,10).' '.substr($scheduletime,0,5).'
-                                    //     </td>
-                                    //     <td style="text-align:center;">
-                                    //         '.$nop.'
-                                    //     </td>
-
-                                    //     <td>
-                                    //     <div style="display:flex;justify-content: center;">
-                                        
-                                    //     <a href="?action=view&id='.$scheduleid.'" class="non-style-link"><button  class="btn-primary-soft btn button-icon btn-view"  style="padding-left: 40px;padding-top: 12px;padding-bottom: 12px;margin-top: 10px;"><font class="tn-in-text">View</font></button></a>
-                                    //    &nbsp;&nbsp;&nbsp;
-                                    //    <a href="?action=drop&id='.$scheduleid.'&name='.$title.'" class="non-style-link"><button  class="btn-primary-soft btn button-icon btn-delete"  style="padding-left: 40px;padding-top: 12px;padding-bottom: 12px;margin-top: 10px;"><font class="tn-in-text">Cancel Session</font></button></a>
-                                    //     </div>
-                                    //     </td>
-                                    // </tr>';
-                                    
-                                }
-                            }
-                                 
-                            ?>
- 
-                            </tbody>
-
-                        </table>
+<?php if (!$rows): ?>
+    <?= empty_state(
+        $activeQuery ? 'No sessions match your filters' : 'No upcoming sessions yet',
+        $activeQuery ? 'Try another date or specialty, or clear the filters to see every upcoming session.' : 'New sessions appear here as soon as doctors publish them. Please check again soon.',
+        $activeQuery ? button_link('Clear filters', 'patient/schedule.php', 'secondary') : button_link('Browse doctors', 'patient/doctors.php', 'secondary'),
+        'booking'
+    ) ?>
+<?php else: ?>
+    <p class="result-count" role="status">Showing <?= e(plural(count($rows), 'session')) ?><?= $page > 1 ? ' (page ' . $page . ')' : '' ?>.</p>
+    <?php foreach ($groups as $date => $sessions): ?>
+        <section class="date-group" aria-labelledby="date-<?= e($date) ?>">
+            <h2 class="date-group__title" id="date-<?= e($date) ?>"><?= e(format_date_long($date)) ?></h2>
+            <ul class="record-list">
+                <?php foreach ($sessions as $session):
+                    $left = spaces_left($session);
+                    $mine = $session['my_appointment'] !== null; ?>
+                    <li class="record">
+                        <div class="record__main">
+                            <h3 class="record__title"><?= e($session['title']) ?></h3>
+                            <ul class="record__meta">
+                                <li><?= icon('clock') ?><?= e(format_time($session['scheduletime'])) ?></li>
+                                <li><?= icon('stethoscope') ?><?= e($session['docname']) ?><?= $session['sname'] ? ' · ' . e($session['sname']) : '' ?></li>
+                            </ul>
                         </div>
-                        </center>
-                   </td> 
-                </tr>
-                       
-                        
-                        
-            </table>
-        </div>
-    </div>
-
-    </div>
-
-</body>
-</html>
+                        <div class="record__aside">
+                            <?php if ($mine): ?>
+                                <span class="badge badge--confirmed"><?= icon('check') ?>You’re booked</span>
+                                <a class="button button--secondary button--small" href="<?= e(url('patient/appointment.php', ['id' => (int) $session['my_appointment']])) ?>">View booking</a>
+                            <?php elseif ($left === 0): ?>
+                                <span class="badge badge--full">Full</span>
+                            <?php else: ?>
+                                <span class="spaces"><?= e(plural($left, 'place')) ?> left</span>
+                                <a class="button button--primary button--small" href="<?= e(url('patient/booking.php', ['id' => (int) $session['scheduleid']])) ?>">Book<span class="visually-hidden"> <?= e($session['title'] . ' with ' . $session['docname'] . ' on ' . format_date($date) . ' at ' . format_time($session['scheduletime'])) ?></span></a>
+                            <?php endif; ?>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </section>
+    <?php endforeach; ?>
+    <?= pagination($page, $hasMore, $activeQuery, 'patient/schedule.php') ?>
+<?php endif; ?>
+<?php
+app_end();

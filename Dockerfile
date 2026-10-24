@@ -1,18 +1,17 @@
-# Utiliser PHP 7.3 avec Apache
-FROM php:7.3-apache
+# Uhai Bora web server: PHP 8.3 with Apache.
+# The code also runs on PHP 7.3+ (for example older XAMPP installs).
+FROM php:8.3-apache
 
-# Installer les extensions PHP nécessaires
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# PHP extension and Apache modules used by the app.
+RUN docker-php-ext-install mysqli \
+    && a2enmod rewrite headers expires deflate
 
-# Copier tout le projet dans le conteneur
-COPY . /var/www/html/
+# Production PHP defaults plus Uhai Bora's overrides (errors are logged, never shown).
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY docker/php/uhai-bora.ini "$PHP_INI_DIR/conf.d/zz-uhai-bora.ini"
+COPY docker/apache/uhai-bora.conf /etc/apache2/conf-available/uhai-bora.conf
+RUN a2enconf uhai-bora
 
-# Modifier les permissions pour Apache
-RUN chown -R www-data:www-data /var/www/html
+ENV APP_ENV=production
 
-# Exposer le port 80 pour Apache
-EXPOSE 80
-
-# Lancer Apache
-CMD ["apache2-foreground"]
-
+COPY --chown=www-data:www-data . /var/www/html/

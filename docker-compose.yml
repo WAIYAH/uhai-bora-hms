@@ -1,12 +1,17 @@
+# Local development stack. For production, set strong passwords through
+# environment variables (or a .env file) and remove the source-code volume on
+# the web service so the image's own copy of the code is used.
 services:
   web:
     build: .
     ports:
       - "${APP_PORT:-8081}:80"
     environment:
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-0}
       DB_HOST: db
-      DB_USER: user
-      DB_PASSWORD: password
+      DB_USER: ${DB_USER:-user}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_NAME: uhaibora
     volumes:
       - .:/var/www/html
@@ -15,13 +20,16 @@ services:
         condition: service_healthy
 
   db:
-    image: mariadb:10.5
-    restart: always
+    image: mariadb:10.11
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: uhaibora
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: uhaibora
+      MARIADB_USER: ${DB_USER:-user}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-password}
+      # Upgrades data created by the earlier MariaDB 10.5 image in place.
+      MARIADB_AUTO_UPGRADE: "1"
+      TZ: Africa/Nairobi
     volumes:
       - db_data:/var/lib/mysql
       - ./SQL_Database_uhaibora.sql:/docker-entrypoint-initdb.d/SQL_Database_uhaibora.sql:ro
